@@ -1,4 +1,4 @@
-FROM ubuntu:25.04-minimal
+FROM ubuntu:25.04
 
 # 环境变量配置
 ENV TZ=Asia/Shanghai
@@ -56,3 +56,4 @@ EXPOSE 22/tcp 7681/tcp 8888/tcp
 
 # 启动 supervisord 管理所有服务
 CMD ["/usr/bin/supervisord", "-n", "-c", "/etc/supervisor/supervisord.conf"]
+
