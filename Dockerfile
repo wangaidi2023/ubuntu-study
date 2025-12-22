@@ -49,11 +49,12 @@ RUN apt update && apt install -y --no-install-recommends \
     && unset DEBIAN_FRONTEND
 
 # 复制 supervisord 配置文件（管理 SSH、ttyd、Jupyter 进程）
-COPY supervisord.conf /etc/supervisor/supervisord.conf  # 复制到主配置路径
+COPY supervisord.conf /etc/supervisor/supervisord.conf
 
 # 暴露端口：SSH(22) + ttyd(7681) + Jupyter(8888)
 EXPOSE 22/tcp 7681/tcp 8888/tcp
 
 # 启动 supervisord 管理所有服务
 CMD ["/usr/bin/supervisord", "-n", "-c", "/etc/supervisor/supervisord.conf"]
+
 
