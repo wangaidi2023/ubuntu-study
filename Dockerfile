@@ -14,6 +14,7 @@ RUN sed -i 's/ports.ubuntu.com/mirrors.aliyun.com/g' /etc/apt/sources.list && \
     sed -i 's/archive.ubuntu.com/mirrors.aliyun.com/g' /etc/apt/sources.list
 
 # 步骤2：更新 apt 并安装基础工具（替换废弃的 net-tools 为 iproute2）
+# 关键：每行末尾加续行符 \，最后一个包后不加
 RUN apt update && apt install -y --no-install-recommends \
     tzdata \
     bash-completion \
@@ -23,7 +24,7 @@ RUN apt update && apt install -y --no-install-recommends \
     git \
     vim \
     nano \
-    iproute2 \  # 替代 net-tools（Ubuntu 25.04 无 net-tools）
+    iproute2 \
     iputils-ping \
     telnet \
     python3 \
@@ -41,7 +42,8 @@ RUN wget -qO /usr/local/bin/ttyd https://github.com/tsl0922/ttyd/releases/downlo
     ttyd -v || echo "ttyd 安装失败，请检查下载链接"
 
 # 步骤4：安装 Python 包（分开安装，便于定位依赖问题）
-RUN pip3 install --no-cache-dir jupyterlab && \
+RUN pip3 install --upgrade pip && \
+    pip3 install --no-cache-dir jupyterlab && \
     pip3 install --no-cache-dir akshare && \
     # 验证安装
     jupyter --version || echo "Jupyter 安装失败" && \
