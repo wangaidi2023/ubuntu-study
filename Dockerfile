@@ -4,6 +4,7 @@ FROM ubuntu:25.04-minimal
 ENV TZ=Asia/Shanghai
 ENV ROOT_PASSWORD=Sykes123
 ENV SHELL=/bin/bash
+ENV DEBIAN_FRONTEND=noninteractive  # 非交互式安装，避免 tzdata 弹框
 
 # 安装基础工具 + SSH + ttyd + Jupyter + 进程管理工具
 RUN apt update && apt install -y --no-install-recommends \
@@ -25,13 +26,11 @@ RUN apt update && apt install -y --no-install-recommends \
     make \
     # SSH 服务
     openssh-server \
-    # 进程管理工具（用于管理多服务）
+    # 进程管理工具
     supervisor \
-    # ttyd 依赖（ttyd 基于 libwebsockets，部分系统需预装）
-    #libwebsockets16 \
     && apt clean && rm -rf /var/lib/apt/lists/* \
-    # 安装 ttyd（从官方下载预编译二进制包，Ubuntu minimal 无官方 apt 源）
-    && wget -qO /usr/local/bin/ttyd https://github.com/tsl0922/ttyd/releases/latest/download/ttyd.x86_64 \
+    # 安装指定版本的 ttyd（避免最新版兼容性问题）
+    && wget -qO /usr/local/bin/ttyd https://github.com/tsl0922/ttyd/releases/download/1.7.3/ttyd.x86_64 \
     && chmod +x /usr/local/bin/ttyd \
     # 安装 Jupyter 和 akshare
     && pip3 install --no-cache-dir akshare jupyterlab \
@@ -41,15 +40,16 @@ RUN apt update && apt install -y --no-install-recommends \
     && echo "root:${ROOT_PASSWORD}" | chpasswd \
     && mkdir -p /var/run/sshd \
     # 创建 supervisord 配置目录
-    && mkdir -p /etc/supervisor \
-    && mkdir -p /study
+    && mkdir -p /etc/supervisor /var/log/supervisor \
+    && mkdir -p /study \
+    # 清理环境变量
+    && unset DEBIAN_FRONTEND
 
-# 复制 supervisord 配置文件（管理 SSH、ttyd、Jupyter 进程）
-COPY supervisord.conf /etc/supervisor/supervisord.conf  # 复制到主配置路径
+# 复制 supervisord 配置文件
+COPY supervisord.conf /etc/supervisor/supervisord.conf
 
-# 暴露端口：SSH(22) + ttyd(7681) + Jupyter(8888)
+# 暴露端口
 EXPOSE 22/tcp 7681/tcp 8888/tcp
 
-# 启动 supervisord 管理所有服务
+# 启动 supervisord
 CMD ["/usr/bin/supervisord", "-n", "-c", "/etc/supervisor/supervisord.conf"]
-
