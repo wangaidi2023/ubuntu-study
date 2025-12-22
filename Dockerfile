@@ -41,13 +41,15 @@ RUN wget -qO /usr/local/bin/ttyd https://github.com/tsl0922/ttyd/releases/downlo
     # 验证 ttyd 是否安装成功
     ttyd -v || echo "ttyd 安装失败，请检查下载链接"
 
-# 步骤4：安装 Python 包（分开安装，便于定位依赖问题）
-RUN pip3 install --upgrade pip && \
-    pip3 install --no-cache-dir jupyterlab && \
-    pip3 install --no-cache-dir akshare && \
+# 步骤4：创建 Python 虚拟环境并安装包（解决 PEP 668 限制）
+RUN python3 -m venv /opt/venv && \
+    # 激活虚拟环境并升级 pip
+    /opt/venv/bin/pip install --upgrade pip && \
+    # 安装 Jupyter Lab 和 akshare
+    /opt/venv/bin/pip install --no-cache-dir jupyterlab akshare && \
     # 验证安装
-    jupyter --version || echo "Jupyter 安装失败" && \
-    python3 -c "import akshare; print(akshare.__version__)" || echo "akshare 安装失败"
+    /opt/venv/bin/jupyter --version || echo "Jupyter 安装失败" && \
+    /opt/venv/bin/python -c "import akshare; print(akshare.__version__)" || echo "akshare 安装失败"
 
 # 步骤5：配置 SSH（适配 Ubuntu 25.04 配置语法）
 RUN sed -i 's/^#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config && \
@@ -71,3 +73,4 @@ EXPOSE 22/tcp 7681/tcp 8888/tcp
 
 # 启动 supervisord
 CMD ["/usr/bin/supervisord", "-n", "-c", "/etc/supervisor/supervisord.conf"]
+
