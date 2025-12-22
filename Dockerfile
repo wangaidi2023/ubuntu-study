@@ -41,7 +41,7 @@ RUN apt update && apt install -y --no-install-recommends \
     && echo "root:${ROOT_PASSWORD}" | chpasswd \
     && mkdir -p /var/run/sshd \
     # 创建 supervisord 配置目录
-    && mkdir -p /etc/supervisor
+    && mkdir -p /etc/supervisor \
     && mkdir -p /study
 
 # 复制 supervisord 配置文件（管理 SSH、ttyd、Jupyter 进程）
@@ -52,3 +52,4 @@ EXPOSE 22/tcp 7681/tcp 8888/tcp
 
 # 启动 supervisord 管理所有服务
 CMD ["/usr/bin/supervisord", "-n", "-c", "/etc/supervisor/supervisord.conf"]
+
