@@ -44,5 +44,8 @@ jobs:
           context: .
           push: true
           tags: ${{ steps.meta.outputs.tags }}
+          # 新增以下两行，解决缓存驱动问题
+          driver: docker-container  # 使用 docker-container 驱动
+          builder: default          # 使用默认 builder
           cache-from: type=gha
           cache-to: type=gha,mode=max
